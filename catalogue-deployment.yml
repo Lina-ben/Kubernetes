@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalogue-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: catalogue
+  template:
+    metadata:
+      labels:
+        app: catalogue
+    spec:
+      containers:
+      - name: catalogue-container
+        image: linae/catalogue-service:1
+        imagePullPolicy: Always
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalogue-service
+spec:
+  ports:
+  - name: http
+    targetPort: 9091
+    port: 80
+  selector:
+    app: catalogue
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: catalogue-ingress
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: catalogue.localhost
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: catalogue-service
+          servicePort: http
+
+

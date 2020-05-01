@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rating-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rating
+  template:
+    metadata:
+      labels:
+        app: rating
+    spec:
+      containers:
+      - name: rating-container
+        image: linae/rating-service:1
+        imagePullPolicy: Always
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: rating-service
+spec:
+  ports:
+  - name: http
+    targetPort: 9092
+    port: 80
+  selector:
+    app: rating
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: rating-ingress
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: rating.localhost
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: rating-service
+          servicePort: http
+

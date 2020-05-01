@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: movie-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: movie
+  template:
+    metadata:
+      labels:
+        app: movie
+    spec:
+      containers:
+      - name: movie-container
+        image: linae/movie-service:1
+        imagePullPolicy: Always
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: movie-service
+spec:
+  ports:
+  - name: http
+    targetPort: 9090
+    port: 80
+  selector:
+    app: movie
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: movie-ingress
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: movie.localhost
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: movie-service
+          servicePort: http
